@@ -12,10 +12,40 @@ providerlist = None
 
 settings_controls = []
 
+def get_available_gpus():
+    """Returns a list of available GPU devices"""
+    print("get_available_gpus() called")
+    gpu_list = []
+    try:
+        import torch
+        if torch.cuda.is_available():
+            device_count = torch.cuda.device_count()
+            print(f"Found {device_count} CUDA devices")
+            for i in range(device_count):
+                gpu_name = torch.cuda.get_device_name(i)
+                gpu_list.append(f"GPU {i}: {gpu_name}")
+        if not gpu_list:
+            gpu_list = ["No GPU detected"]
+    except Exception as e:
+        print(f"Error detecting GPUs: {e}")
+        gpu_list = ["No GPU detected"]
+    print(f"Returning GPU list: {gpu_list}")
+    return gpu_list
+
+def get_current_gpu_value(gpu_list):
+    """Safely get the current GPU value for the dropdown"""
+    try:
+        if roop.globals.cuda_device_id < len(gpu_list) and "GPU" in gpu_list[roop.globals.cuda_device_id]:
+            return gpu_list[roop.globals.cuda_device_id]
+    except:
+        pass
+    return gpu_list[0] if gpu_list else "No GPU detected"
+
 def settings_tab():
     from roop.core import suggest_execution_providers
     global providerlist
 
+    
     providerlist = suggest_execution_providers()
     with gr.Tab("⚙ Settings"):
         with gr.Row():
@@ -32,6 +62,11 @@ def settings_tab():
         with gr.Row():
             with gr.Column():
                 settings_controls.append(gr.Dropdown(providerlist, label="Provider", value=roop.globals.CFG.provider, elem_id='provider', interactive=True))
+                
+                gpu_list = get_available_gpus()
+                gpu_value = get_current_gpu_value(gpu_list)
+                gpu_dropdown = gr.Dropdown(choices=gpu_list, label="Select GPU", value=gpu_value, elem_id='gpu_device', interactive=True, visible=True)
+                
                 chk_det_size = gr.Checkbox(label="Use default Det-Size", value=True, elem_id='default_det_size', interactive=True)
                 settings_controls.append(gr.Checkbox(label="Force CPU for Face Analyser", value=roop.globals.CFG.force_cpu, elem_id='force_cpu', interactive=True))
                 max_threads = gr.Slider(1, 32, value=roop.globals.CFG.max_threads, label="Max. Number of Threads", info='default: 3', step=1.0, interactive=True)
@@ -58,6 +93,7 @@ def settings_tab():
     max_threads.input(fn=lambda a,b='max_threads':on_settings_changed_misc(a,b), inputs=[max_threads])
     memory_limit.input(fn=lambda a,b='memory_limit':on_settings_changed_misc(a,b), inputs=[memory_limit])
     video_quality.input(fn=lambda a,b='video_quality':on_settings_changed_misc(a,b), inputs=[video_quality])
+    gpu_dropdown.select(fn=on_gpu_changed)
 
     # button_clean_temp.click(fn=clean_temp, outputs=[bt_srcfiles, input_faces, target_faces, bt_destfiles])
     button_clean_temp.click(fn=clean_temp)
@@ -84,6 +120,23 @@ def on_settings_changed_misc(new_val, attribname):
     else:
         print("Didn't find attrib!")
         
+
+def on_gpu_changed(evt: gr.SelectData):
+    """Handle GPU selection change"""
+    try:
+        gpu_string = evt.value
+        if gpu_string and "GPU" in gpu_string:
+            # Extract GPU index from "GPU 0: NVIDIA GeForce..."
+            gpu_id = int(gpu_string.split(":")[0].split("GPU")[1].strip())
+            roop.globals.cuda_device_id = gpu_id
+            if hasattr(roop.globals.CFG, 'gpu_device_id'):
+                roop.globals.CFG.gpu_device_id = gpu_id
+                roop.globals.CFG.save()
+            print(f'GPU {gpu_id} selected')
+            gr.Info(f'GPU {gpu_id} selected. Restart may be required for changes to take effect.')
+    except Exception as e:
+        print(f"Error changing GPU: {e}")
+        gr.Warning('Failed to parse GPU selection')
 
 
 def on_settings_changed(evt: gr.SelectData):

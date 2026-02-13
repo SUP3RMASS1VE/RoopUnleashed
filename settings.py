@@ -33,6 +33,7 @@ class Settings:
         self.max_threads = self.default_get(data, 'max_threads', 2)
         self.memory_limit = self.default_get(data, 'memory_limit', 0)
         self.provider = self.default_get(data, 'provider', 'cuda')
+        self.gpu_device_id = self.default_get(data, 'gpu_device_id', 0)
         self.force_cpu = self.default_get(data, 'force_cpu', False)
         self.output_template = self.default_get(data, 'output_template', '{file}_{time}')
         self.use_os_temp_folder = self.default_get(data, 'use_os_temp_folder', False)
@@ -57,6 +58,7 @@ class Settings:
             'max_threads' : self.max_threads,
             'memory_limit' : self.memory_limit,
             'provider' : self.provider,
+            'gpu_device_id' : self.gpu_device_id,
             'force_cpu' : self.force_cpu,
 			'output_template' : self.output_template,
             'use_os_temp_folder' : self.use_os_temp_folder,

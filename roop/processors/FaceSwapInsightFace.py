@@ -44,7 +44,8 @@ class FaceSwapInsightFace():
         io_binding = self.model_swap_insightface.io_binding()           
         io_binding.bind_cpu_input("target", temp_frame)
         io_binding.bind_cpu_input("source", latent)
-        io_binding.bind_output("output", self.devicename)
+        output_device_id = roop.globals.cuda_device_id if self.devicename == 'cuda' else 0
+        io_binding.bind_output("output", self.devicename, output_device_id)
         self.model_swap_insightface.run_with_iobinding(io_binding)
         ort_outs = io_binding.copy_outputs_to_cpu()[0]
         return ort_outs[0]

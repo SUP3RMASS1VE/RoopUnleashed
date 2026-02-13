@@ -35,7 +35,8 @@ class Enhance_CodeFormer():
             model_outputs = self.model_codeformer.get_outputs()
             self.io_binding = self.model_codeformer.io_binding()           
             self.io_binding.bind_cpu_input(self.model_inputs[1].name, np.array([0.5]))
-            self.io_binding.bind_output(model_outputs[0].name, self.devicename)
+            output_device_id = roop.globals.cuda_device_id if self.devicename == 'cuda' else 0
+            self.io_binding.bind_output(model_outputs[0].name, self.devicename, output_device_id)
 
 
     def Run(self, source_faceset: FaceSet, target_face: Face, temp_frame: Frame) -> Frame:

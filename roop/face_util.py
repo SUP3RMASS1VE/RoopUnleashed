@@ -26,6 +26,12 @@ def get_face_analyser() -> Any:
             # removed genderage
             allowed_modules = roop.globals.g_desired_face_analysis
             roop.globals.g_current_face_analysis = roop.globals.g_desired_face_analysis
+            ctx_id = -1
+            for provider in roop.globals.execution_providers:
+                provider_name = provider[0] if isinstance(provider, tuple) else provider
+                if provider_name == "CUDAExecutionProvider":
+                    ctx_id = roop.globals.cuda_device_id
+                    break
             if roop.globals.CFG.force_cpu:
                 print("Forcing CPU for Face Analysis")
                 FACE_ANALYSER = insightface.app.FaceAnalysis(
@@ -37,9 +43,13 @@ def get_face_analyser() -> Any:
                     name="buffalo_l", root=model_path, providers=roop.globals.execution_providers,allowed_modules=allowed_modules
                 )
             FACE_ANALYSER.prepare(
-                ctx_id=0,
+                ctx_id=ctx_id,
                 det_size=(640, 640) if roop.globals.default_det_size else (320, 320),
             )
+            if ctx_id >= 0:
+                print(f"FaceAnalysis prepared on cuda:{ctx_id}")
+            else:
+                print("FaceAnalysis prepared on CPU")
     return FACE_ANALYSER
 
 

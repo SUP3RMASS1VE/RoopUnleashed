@@ -43,6 +43,9 @@ def run():
     gputype = util.get_device()
     if gputype == 'cuda':
         util.print_cuda_info()
+        print(f'Selected CUDA device ID: {roop.globals.cuda_device_id}')
+    else:
+        print('Selected CUDA device ID: n/a (non-CUDA provider)')
         
     print(f'Using provider {roop.globals.execution_providers} - Device:{gputype}')
     

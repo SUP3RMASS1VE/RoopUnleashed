@@ -42,7 +42,8 @@ class Mask_XSeg():
         temp_frame = temp_frame[None, ...]
         io_binding = self.model_xseg.io_binding()           
         io_binding.bind_cpu_input(self.model_inputs[0].name, temp_frame)
-        io_binding.bind_output(self.model_outputs[0].name, self.devicename)
+        output_device_id = roop.globals.cuda_device_id if self.devicename == 'cuda' else 0
+        io_binding.bind_output(self.model_outputs[0].name, self.devicename, output_device_id)
         self.model_xseg.run_with_iobinding(io_binding)
         ort_outs = io_binding.copy_outputs_to_cpu()
         result = ort_outs[0][0]

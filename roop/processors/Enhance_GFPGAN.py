@@ -48,7 +48,8 @@ class Enhance_GFPGAN():
 
         io_binding = self.model_gfpgan.io_binding()           
         io_binding.bind_cpu_input("input", temp_frame)
-        io_binding.bind_output("1288", self.devicename)
+        output_device_id = roop.globals.cuda_device_id if self.devicename == 'cuda' else 0
+        io_binding.bind_output("1288", self.devicename, output_device_id)
         self.model_gfpgan.run_with_iobinding(io_binding)
         ort_outs = io_binding.copy_outputs_to_cpu()
         result = ort_outs[0][0]

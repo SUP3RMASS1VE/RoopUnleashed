@@ -394,7 +394,8 @@ def run() -> None:
     if not pre_check():
         return
     roop.globals.CFG = Settings('config.yaml')
-    roop.globals.cuda_device_id = roop.globals.startup_args.cuda_device_id
+    # Use saved GPU device ID from settings, unless explicitly provided via command line
+    roop.globals.cuda_device_id = roop.globals.CFG.gpu_device_id if hasattr(roop.globals.CFG, 'gpu_device_id') else roop.globals.startup_args.cuda_device_id
     roop.globals.execution_threads = roop.globals.CFG.max_threads
     roop.globals.video_encoder = roop.globals.CFG.output_video_codec
     roop.globals.video_quality = roop.globals.CFG.video_quality

@@ -38,7 +38,8 @@ class Frame_Colorizer():
             self.model_inputs = self.model_colorizer.get_inputs()
             model_outputs = self.model_colorizer.get_outputs()
             self.io_binding = self.model_colorizer.io_binding()
-            self.io_binding.bind_output(model_outputs[0].name, self.devicename)
+            output_device_id = roop.globals.cuda_device_id if self.devicename == 'cuda' else 0
+            self.io_binding.bind_output(model_outputs[0].name, self.devicename, output_device_id)
 
     def Run(self, input_frame: Frame) -> Frame:
         temp_frame = cv2.cvtColor(input_frame, cv2.COLOR_BGR2GRAY)

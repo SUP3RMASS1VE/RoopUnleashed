@@ -45,7 +45,8 @@ class Frame_Upscale():
             self.model_inputs = self.model_upscale.get_inputs()
             model_outputs = self.model_upscale.get_outputs()
             self.io_binding = self.model_upscale.io_binding()
-            self.io_binding.bind_output(model_outputs[0].name, self.devicename)
+            output_device_id = roop.globals.cuda_device_id if self.devicename == 'cuda' else 0
+            self.io_binding.bind_output(model_outputs[0].name, self.devicename, output_device_id)
 
     def getProcessedResolution(self, width, height):
         return (width * self.scale, height * self.scale)

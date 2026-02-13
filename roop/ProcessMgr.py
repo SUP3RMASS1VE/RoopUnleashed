@@ -113,6 +113,7 @@ class ProcessMgr():
         self.last_swapped_frame = None
         self.options = options
         devicename = get_device()
+        selected_cuda = roop.globals.cuda_device_id if devicename == 'cuda' else None
 
         roop.globals.g_desired_face_analysis=["landmark_3d_68", "landmark_2d_106","detection","recognition"]
         if options.swap_mode == "all_female" or options.swap_mode == "all_male":
@@ -134,6 +135,10 @@ class ProcessMgr():
             if p is not None:
                 extoption.update({"devicename": devicename})
                 p.Initialize(extoption)
+                if selected_cuda is not None:
+                    print(f"Processor '{key}' initialized on cuda:{selected_cuda}")
+                else:
+                    print(f"Processor '{key}' initialized on {devicename}")
                 newprocessors.append(p)
             else:
                 print(f"Not using {module}")
